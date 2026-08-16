@@ -1,0 +1,85 @@
+# The Machine — canonical marketing metrics (v0.1)
+#
+# This is the target vocabulary every source is mapped INTO. It is deliberately
+# small. The product bet is that ~15 canonical metrics cover 90% of agent
+# questions, and that the hard work is not adding metric #16 — it's recording
+# HOW each source differs from the canonical definition.
+#
+# Note the `requires_disclosure` flag. That is the whole thesis in one field:
+# some source->canonical mappings are lossy in a way that a downstream agent
+# MUST be told about, or it will compare two things that aren't comparable.
+
+version: "0.1"
+
+metrics:
+  - key: media_spend
+    label: Media Spend
+    dtype: decimal
+    unit: currency
+    definition: >
+      Gross media cost paid to the platform for delivery, in reporting currency,
+      exclusive of agency fees.
+    disclosure_axes: [fee_inclusion, currency]
+
+  - key: impressions
+    label: Impressions
+    dtype: integer
+    definition: Count of served ad impressions.
+    disclosure_axes: [viewability_basis]
+
+  - key: clicks
+    label: Clicks
+    dtype: integer
+    definition: >
+      User interactions resulting in navigation to a client-owned property.
+    disclosure_axes: [click_type]
+
+  - key: conversions
+    label: Conversions
+    dtype: decimal
+    definition: >
+      Attributed count of the client's primary conversion action.
+    disclosure_axes: [attribution_model, attribution_window]
+
+  - key: conversion_value
+    label: Conversion Value
+    dtype: decimal
+    unit: currency
+    definition: Revenue or modelled value attributed to conversions.
+    disclosure_axes: [attribution_model, attribution_window, currency]
+
+dimensions:
+  - key: date
+    dtype: date
+    definition: Reporting date, normalised to the finest available grain.
+    disclosure_axes: [grain, timezone]
+
+  - key: campaign_name
+    dtype: string
+  - key: campaign_id
+    dtype: string
+    note: Platform-scoped. NOT unique across sources. Entity resolution is out of scope for v0.
+  - key: channel
+    dtype: string
+    allowed: [SOCIAL, SEARCH, DISPLAY, VIDEO, UNKNOWN]
+
+# Disclosure axes are the dimensions along which two sources can legitimately
+# disagree. A conflict on one of these is NOT a data quality bug to be fixed —
+# it is a definitional difference to be recorded and carried forward.
+disclosure_axes:
+  fee_inclusion:
+    values: [incl_platform_fees, excl_platform_fees, unknown]
+  currency:
+    values: [USD, GBP, EUR, mixed, unknown]
+  click_type:
+    values: [link_clicks, all_clicks, unknown]
+  attribution_model:
+    values: [last_click, data_driven, platform_default, unknown]
+  attribution_window:
+    values: ["7d_click_1d_view", "28d_click_1d_view", "30d_any", unknown]
+  grain:
+    values: [daily, weekly, monthly]
+  timezone:
+    values: [account_tz, utc, unknown]
+  viewability_basis:
+    values: [served, viewable, unknown]
