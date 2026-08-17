@@ -87,8 +87,8 @@ Say this only if asked *“how did you make the sample data?”* — it lives in
 5. **Slice metrics.** Time-to-first-*trusted*-query; auto-map rate across
    clients; human review minutes per source; contradiction escape rate.
 6. **Real vs stubbed.** Name stubs: connectors, warehouse, auth, multi-tenancy,
-   full agent layer. Real: profiler, LLM propose, conflict rules, contract
-   YAML, caveat-bearing query.
+   query agent. Real: profiler, LLM propose, conflict agent (schema scan +
+   tools), contract YAML, caveat-bearing query.
 
 **Transition line (minute ~15):**
 
@@ -194,27 +194,41 @@ Session has proposals; collisions are visible under shared canonical keys.
 
 ---
 
-## 4. Stage C — Detect conflicts (deterministic rules)
+## 4. Stage C — Detect conflicts (schema scan + agent)
 
 **Tab:** `3 · Conflict queue`  
 **Code:** `src/conflicts.py` → `detect`  
-**LLM?** No — rules over proposals + profiles.
+**LLM?** Schema scan is deterministic. Agent is a tool-using Claude loop.
 
 ### What you do
 
 1. Stay on / open **3 · Conflict queue**.
 2. Click **Detect conflicts**.
-3. Confirm `contracts/acme.yaml` appears (seeded with mappings + open conflicts).
+3. Point at the metrics: schema count vs agent-submitted vs turns.
+4. Confirm `contracts/acme.yaml` appears (seeded with mappings + open conflicts).
 
 ### What the system does
 
-Runs **exactly three** checks (4–6 intentionally not built):
+**Layer 1 — schema scan** (no LLM). Collision groups × the disclosure axes on
+that canonical metric in `metrics.yaml`. Adding an axis is a new conflict
+class; you do not ship a new if-statement. Grain, unit transform, coverage,
+and a mixed `currency` column come from the profiler.
 
-| Check | Severity | Trigger | Typical options |
-|---|---|---|---|
-| **GRAIN_MISMATCH** | `REVIEW` | Profiles disagree (`daily` vs `weekly`) | `rollup_to_weekly`, `keep_separate_by_source`, `downsample_to_daily_lossy` |
-| **UNIT_MISMATCH** | `AUTO` | Same canonical key, different `unit_transform` | `apply divide_by_1e6 to lumen_search.cost_micros`, `apply_no_transforms` |
-| **DEFINITION_DIVERGENCE** | `BLOCK` if axis is `attribution_model` or `attribution_window`; else `REVIEW` | Known disclosure values disagree (`unknown` ignored) | `use_<source>_(<value>)`, `keep_split_by_source` |
+**Layer 2 — agent** (tools). Inspects groups and sources, searches the taxonomy
+doc, submits what the schema cannot see: `DOC_CONTRADICTION`, naming
+violations, entity-scope. Python raises severity to the policy floor — the
+agent cannot AUTO an irreducible definition.
+
+| Kind | Severity floor | Typical trigger |
+|---|---|---|
+| **GRAIN_MISMATCH** | `REVIEW` | Profiles disagree (`daily` vs `weekly`) |
+| **UNIT_MISMATCH** | `AUTO` | Same canonical key, different `unit_transform` |
+| **DEFINITION_DIVERGENCE** | `BLOCK` if `attribution_model` / `attribution_window`; else `REVIEW` | Known disclosure values disagree (`unknown` ignored) |
+| **CURRENCY_MIXED** | `BLOCK` | Distinct currency values in one source field |
+| **COVERAGE_GAP** | `REVIEW` | Date ranges not aligned |
+| **DOC_CONTRADICTION** (agent) | `REVIEW` | Taxonomy asserts X, data/proposals imply not-X |
+| **NAMING_VIOLATION** (agent) | `REVIEW` | Campaign names break the documented convention |
+| **ENTITY_SCOPE** (agent) | `REVIEW` | Same concept, different ID spaces — flag, don't solve |
 
 Also on first detect:
 
@@ -235,10 +249,16 @@ Also on first detect:
 > “Blocking is the interesting one. A wrong conversions total is worse than no
 > conversions total — especially if an agent acts on it.”
 
+> “The model is allowed to notice. It is not allowed to AUTO two attribution
+> windows. Python raises it to BLOCK even if the agent is polite. That’s the
+> policy floor — and it’s why this is an agent with rails, not a list of
+> if-statements and not a black box.”
+
 ### Exit criteria
 
-Queue shows GRAIN / UNIT / DEFINITION (as the model’s disclosures allow). YAML
-exists under the tab.
+Queue shows schema kinds (GRAIN / UNIT / DEFINITION / CURRENCY) plus at least
+one agent-origin conflict (DOC / NAMING / ENTITY) if the call succeeded.
+YAML exists under the tab. Metrics row shows schema count vs agent turns.
 
 ---
 
@@ -362,7 +382,8 @@ Panel sees a number that **refuses to launder** an irreducible conflict.
 
 | They say | You say |
 |---|---|
-| Third platform, novel schema | Contract isn’t source-specific; mappings are a list. Entity resolution across ID spaces is what breaks — scoped out. |
+| Third platform, novel schema | Contract isn’t source-specific; mappings are a list. Schema scan is N-way; a new disclosure axis is a yaml line. Entity resolution across ID spaces is what breaks — scoped out. |
+| Why not three if-statements? | Schema scan scales with the ontology; the agent finds what rules cannot see. Python is the policy floor. |
 | Client says doc is right, data wrong | Neither auto-wins; override with author + rationale; visible in git diff. |
 | 400 fields, not 12 | Confidence tiering; metric is **human review minutes per source**. |
 | How do you know the model mapped right? | You don’t from one run — need a golden set; gate prompt changes on it. |
@@ -387,7 +408,7 @@ Copy this to a sticky note:
 [ ] Reset: rm contracts/acme.yaml && regenerate data
 [ ] A  Profile          — grain, micros hint, has_decimals
 [ ] B  Run proposal     — group by canonical_key; spend↔cost_micros
-[ ] C  Detect conflicts — GRAIN / UNIT / DEFINITION; severities
+[ ] C  Detect conflicts — schema count vs agent turns; BLOCK on attribution
 [ ] D  Accept BLOCK     — keep_split; show decided_by / decided_at YAML
 [ ] E  Run query        — May 2026; caveats on split conversions
 [ ] Close               — compounding + invite breaks

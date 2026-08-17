@@ -30,8 +30,8 @@ streamlit run app.py
 |---|---|
 | Deterministic profiler | Connectors — CSVs on disk; extraction is a commodity |
 | LLM mapping proposal (live, uncanned) | Warehouse — pandas/duckdb in memory |
-| Conflict detection rules | Auth, multi-tenancy — one hardcoded client |
-| Contract read/write + versioning | Agent layer — one hardcoded query |
+| Conflict agent: schema scan + tool-using discovery | Auth, multi-tenancy — one hardcoded client |
+| Contract read/write + versioning | Query agent — one hardcoded question (iter 5) |
 | Caveat propagation into results | Confidence calibration — raw model output |
 
 ## Layout
@@ -41,7 +41,7 @@ generate_sample_data.py   fixtures + the planted-conflict answer key
 canonical/metrics.yaml    the target vocabulary + disclosure axes
 src/profile.py            REAL  — deterministic profiling
 src/propose.py            LIVE  — LLM mapping proposal
-src/conflicts.py          LIVE  — deterministic conflict checks
+src/conflicts.py          LIVE  — schema scan + conflict agent
 src/contract.py           REAL  — the artifact
 src/query.py              LIVE  — query with caveats
 app.py                    Streamlit shell

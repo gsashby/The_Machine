@@ -48,19 +48,26 @@ def add_mapping(contract: dict, *, source: str, source_field: str,
 
 
 def resolve(contract: dict, *, conflict_kind: str, canonical_key: str,
-            decision: str, rationale: str, decided_by: str) -> None:
+            decision: str, rationale: str, decided_by: str, axis: str | None = None) -> None:
     """Record a human adjudication. This is the durable output of onboarding."""
-    contract["resolutions"].append({
+    record = {
         "conflict_kind": conflict_kind,
         "canonical_key": canonical_key,
         "decision": decision,
         "rationale": rationale,
         "decided_by": decided_by,
         "decided_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
-    })
+    }
+    if axis:
+        record["axis"] = axis
+    contract["resolutions"].append(record)
     contract["open_conflicts"] = [
         c for c in contract["open_conflicts"]
-        if not (c.get("kind") == conflict_kind and c.get("canonical_key") == canonical_key)
+        if not (
+            c.get("kind") == conflict_kind
+            and c.get("canonical_key") == canonical_key
+            and (axis is None or c.get("axis") == axis)
+        )
     ]
 
 

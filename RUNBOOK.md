@@ -47,11 +47,13 @@ it does, point at the profiler's `has_decimals=True` on Lumen's conversions:
 *"That's the tell. Fractional conversions mean modelled attribution. The rules
 found that, not the model."*
 
-**Iteration 3 (~33–43) — the conflict queue.** `conflicts.py`. Get GRAIN_MISMATCH,
-UNIT_MISMATCH and DEFINITION_DIVERGENCE firing. Defend the three severity tiers:
-AUTO / REVIEW / **BLOCK**. Blocking is the interesting one — *"the system refuses
-to serve a harmonised conversions number until a human decides, because a wrong
-number here is worse than no number."*
+**Iteration 3 (~33–43) — the conflict agent (deep slice).** `conflicts.py`. This
+is not a list of three checks. Point at the two layers: the schema scan walks
+collision groups against `disclosure_axes` in `metrics.yaml` — a new axis is a
+new conflict class, no new Python — then the agent uses tools to find what the
+schema cannot see (doc vs data, naming, mixed currency). Defend the policy
+floor: *"the model is allowed to notice. It is not allowed to AUTO two
+attribution windows. Python raises it to BLOCK even if the agent is polite."*
 
 **Iteration 4 (~43–52) — adjudicate and write the contract.** Accept a decision
 in the UI, watch the YAML get written with `decided_by` and `decided_at`. This is
@@ -74,7 +76,8 @@ data ever does."*
 
 | They say | You say |
 |---|---|
-| "A third platform arrives, novel schema." | Nothing about the contract is source-specific — mappings are a list, canonical is fixed. What breaks is entity resolution across three ID spaces, which I scoped out. |
+| "A third platform arrives, novel schema." | Nothing about the contract is source-specific — mappings are a list, canonical is fixed. The schema scan is N-way: a third source is another member of the collision group, and a new disclosure axis is a yaml line, not a new check. What still breaks is entity resolution across three ID spaces, which I scoped out. |
+| "Why not just three if-statements?" | Because checks 4–n are where the product lives, and they don't fit in a list. The schema scan scales with the ontology; the agent finds doc-vs-data and novel kinds. Python is the policy floor so the model cannot quietly AUTO an irreducible definition. |
 | "Client insists the doc is right, the data is wrong." | Neither auto-wins. It's an override, recorded with an author and a rationale, and it's now visible in the diff when someone disagrees in Q3. |
 | "400 fields, not 12." | Confidence tiering. Auto-accept above threshold, and the metric I'd run the roadmap on is human review minutes per source, not fields mapped. |
 | "How do you know the model mapped it right?" | I don't, from one run. You need a golden set — hand-labelled mappings across ~10 real client sources — and you gate prompt changes on it. That's the first thing I'd build after this slice. |

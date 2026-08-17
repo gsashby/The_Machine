@@ -28,13 +28,24 @@ as you send them. The panel is grading how you drive the tool, so narrate the
 > grouping is what makes conflicts visible. Show confidence, transform, and
 > disclosures. Collapse anything above 0.9 confidence by default.
 
-## Iteration 3 — conflict detection
+## Iteration 3 — conflict agent (the deep slice)
 
-> Implement `detect` in `src/conflicts.py`. Start with exactly three checks:
-> GRAIN_MISMATCH, UNIT_MISMATCH, DEFINITION_DIVERGENCE. Severity: AUTO for
-> deterministic transforms, REVIEW for grain, BLOCK for divergent
-> attribution_model or attribution_window. Each Conflict carries the concrete
-> options a human can pick between. Don't build checks 4-6 yet.
+> A list of three checks does not survive a third platform or a new disclosure
+> axis. Implement `detect` in `src/conflicts.py` as two layers:
+>
+> (1) SCHEMA SCAN — deterministic, driven by `canonical/metrics.yaml`. For every
+> collision group, walk that metric's `disclosure_axes`. Adding an axis to the
+> yaml is a new conflict class; you do not ship a new if-statement. Grain, unit
+> transform, and date coverage come from the profiler, not the model.
+>
+> (2) AGENT — tool-using. It can inspect collision groups, inspect a source
+> profile, search the taxonomy doc, and submit conflicts the schema cannot see
+> (DOC_CONTRADICTION, mixed currency, naming violations, entity-scope).
+>
+> Python enforces severity floors. The agent may raise severity; it may not
+> AUTO a BLOCK. Attribution model/window divergence is always BLOCK. Mixed
+> currency is always BLOCK. Each Conflict still carries concrete options a
+> human can pick between.
 
 ## Iteration 4 — adjudicate
 
