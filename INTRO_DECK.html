@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Machine · 15-minute intro</title>
+  <style>
+    :root {
+      --bg: #12110f;
+      --bg-2: #1b1a17;
+      --fg: #f3efe6;
+      --muted: #9b9588;
+      --dim: #6f6a60;
+      --line: #2c2a25;
+      --accent: #d4a017;
+      --accent-2: #e8d5a3;
+      --warn: #c45c3e;
+      --ok: #7a9a62;
+      --card: #1f1e1a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
+      overflow: hidden;
+    }
+    .deck { height: 100%; width: 100%; position: relative; }
+    .slide {
+      display: none;
+      height: 100%;
+      padding: 7vh 8vw 11vh;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2.2vh;
+    }
+    .slide.on { display: flex; }
+    .kicker {
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    h1 {
+      font-size: clamp(2.1rem, 4.6vw, 4.2rem);
+      font-weight: 600;
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+      max-width: 18ch;
+    }
+    h2 {
+      font-size: clamp(1.7rem, 3.2vw, 2.8rem);
+      font-weight: 600;
+      line-height: 1.18;
+      letter-spacing: -0.02em;
+      max-width: 28ch;
+    }
+    .lede {
+      font-size: clamp(1.05rem, 1.7vw, 1.35rem);
+      color: var(--accent-2);
+      max-width: 46ch;
+      line-height: 1.4;
+    }
+    p, li {
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+      font-size: clamp(0.95rem, 1.35vw, 1.15rem);
+      line-height: 1.45;
+      color: var(--fg);
+    }
+    .muted { color: var(--muted); }
+    ul.talk { list-style: none; display: grid; gap: 0.85rem; max-width: 52rem; }
+    ul.talk li { padding-left: 1.1rem; position: relative; }
+    ul.talk li::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0.55em;
+      width: 0.45rem; height: 0.45rem;
+      background: var(--accent);
+    }
+    .grid { display: grid; gap: 1.1rem; }
+    .g2 { grid-template-columns: 1fr 1fr; }
+    .g3 { grid-template-columns: 1fr 1fr 1fr; }
+    .g4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 1.15rem 1.2rem 1.2rem;
+    }
+    .card h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+    .card .why {
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .card .ifwrong {
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+      font-size: 0.8rem;
+      color: var(--warn);
+      margin-top: 0.55rem;
+      line-height: 1.35;
+    }
+    .hl {
+      border-color: var(--accent);
+      background: #231e12;
+    }
+    .layer {
+      padding: 1.3rem 1.2rem;
+      border: 1px solid var(--line);
+      background: var(--card);
+      min-height: 11.5rem;
+    }
+    .layer.product {
+      border-color: var(--accent);
+      background: #241f14;
+    }
+    .layer .name {
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 0.45rem;
+    }
+    .layer.product .name { color: var(--accent); }
+    .layer h3 { font-size: 1.35rem; margin-bottom: 0.45rem; }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0.55rem;
+      align-items: stretch;
+    }
+    .step {
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 0.85rem 0.75rem;
+      min-height: 8.2rem;
+    }
+    .step .n {
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.35rem;
+    }
+    .step h3 { font-size: 0.98rem; margin-bottom: 0.3rem; }
+    .step p { font-size: 0.78rem; color: var(--muted); }
+    .tag {
+      display: inline-block;
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid var(--line);
+      padding: 0.12rem 0.4rem;
+      margin-top: 0.45rem;
+      color: var(--muted);
+    }
+    .tag.live { color: var(--ok); border-color: #3d4a32; }
+    .tag.stub { color: var(--warn); border-color: #5a3228; }
+    .tag.det { color: var(--accent-2); border-color: #4a4330; }
+    table.cmp {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+      font-size: 0.92rem;
+    }
+    table.cmp th {
+      text-align: left;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 600;
+      padding: 0 0 0.7rem;
+      border-bottom: 1px solid var(--line);
+    }
+    table.cmp td {
+      padding: 0.72rem 1.1rem 0.72rem 0;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      color: var(--fg);
+    }
+    table.cmp td:last-child { padding-right: 0; }
+    .sev { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.8rem; }
+    .sev div { padding: 1rem 1.05rem; border: 1px solid var(--line); background: var(--card); }
+    .sev .lab {
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+    }
+    .chrome {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      height: 7.5vh;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8vw;
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+      font-size: 0.75rem;
+      color: var(--dim);
+      border-top: 1px solid var(--line);
+      background: var(--bg);
+      z-index: 5;
+    }
+    .bar {
+      position: absolute;
+      left: 0; top: 0;
+      height: 2px;
+      background: var(--accent);
+      width: 0%;
+    }
+    .notes {
+      display: none;
+      position: fixed;
+      right: 1.2rem;
+      bottom: 9vh;
+      width: min(28rem, 36vw);
+      max-height: 42vh;
+      overflow: auto;
+      background: #0e0d0b;
+      border: 1px solid var(--line);
+      padding: 1rem 1.05rem;
+      z-index: 6;
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: var(--accent-2);
+    }
+    .notes.on { display: block; }
+    .notes strong { color: var(--fg); font-weight: 600; }
+    .help {
+      position: fixed;
+      top: 0.9rem;
+      right: 1.2rem;
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+      font-size: 0.72rem;
+      color: var(--dim);
+      z-index: 5;
+    }
+    .clock.warn { color: var(--warn); }
+    @media (max-width: 900px) {
+      .g2, .g3, .g4, .flow, .sev { grid-template-columns: 1fr; }
+      .slide { padding: 5vh 6vw 12vh; }
+      h1 { max-width: none; }
+    }
+    @media print {
+      html, body, .deck { height: auto; overflow: visible; }
+      .slide { display: flex !important; page-break-after: always; height: 100vh; }
+      .chrome, .help, .notes { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="help">← → · N notes · T timer · F fullscreen</div>
+  <div class="notes" id="notes"></div>
+  <div class="deck" id="deck">
+
+    <section class="slide on" data-min="0:00–0:30" data-notes="Land the reframe in one sentence, then sit in it. Do not open the app. Do not apologize for Streamlit. You are arguing that onboarding’s deliverable is a contract, not a pipeline.">
+      <div class="kicker">The Machine · 15-minute thesis</div>
+      <h1>Onboarding takes weeks because of judgment calls, not pipes.</h1>
+      <p class="lede">The answers live in Slack, get hardcoded into SQL, and disappear. The product is the decision that survives.</p>
+      <p class="muted" style="font-family:'Avenir Next',system-ui,sans-serif;font-size:0.9rem;">Then a live walkthrough. Interrupt whenever — I left the room for that.</p>
+    </section>
+
+    <section class="slide" data-min="0:30–2:00" data-notes="Beat 1 from the script. Extraction is a commodity: connectors, CSVs, warehouses exist. What does not exist is a durable record of whether spend includes platform fees, or whether a conversion is 7-day-click or data-driven 30d. Those answers get Slack’d, hardcoded, lost. That is why client two is not faster than client one today.">
+      <div class="kicker">1 · Problem</div>
+      <h2>The weeks are spent answering questions the warehouse cannot see.</h2>
+      <ul class="talk">
+        <li>Does Meta spend include platform fees? Does Google cost include them?</li>
+        <li>Is this conversion last-click 7d/1d-view, or modelled 30-day?</li>
+        <li>Daily vs weekly grain: a join is already a <em>decision</em>, not a SQL problem.</li>
+        <li>Those answers get hardcoded into pipeline logic. Next quarter, nobody knows who decided, or why.</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-min="2:00–4:00" data-notes="Three layers. Land we buy. Serve is a query with caveats — the payoff, not the product. Resolve is the product: map sources onto a small canonical vocabulary, detect conflicts, force a human decision on the irreducible ones, write a versioned YAML contract. Quote: onboarding should not produce a pipeline. It should produce this file.">
+      <div class="kicker">2 · Solution</div>
+      <h2>Land. Resolve. Serve. Only the middle is the product.</h2>
+      <div class="grid g3">
+        <div class="layer">
+          <div class="name">Land · buy</div>
+          <h3>Get the files in</h3>
+          <p class="muted">Connectors, auth, warehouses. Commodity. Stubbed on purpose.</p>
+        </div>
+        <div class="layer product">
+          <div class="name">Resolve · the product</div>
+          <h3>Ratify a semantic contract</h3>
+          <p class="muted">Map → detect → adjudicate. Author, timestamp, version. Diffable in git.</p>
+        </div>
+        <div class="layer">
+          <div class="name">Serve · payoff</div>
+          <h3>Query with caveats</h3>
+          <p class="muted">The number carries its own disclosure. An agent that skips the caveat is the failure mode.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-min="4:00–6:00" data-notes="THE MONEY SLIDE. Do not rush. A 7-day-click conversion and a data-driven conversion are different events. Summing them is data laundering: a confidently wrong number an agent then acts on. The product’s job is not to erase disagreement. Detect it, force a decision once, record who decided and why, carry the caveat forward. Blocking is the interesting severity.">
+      <div class="kicker">The money slide</div>
+      <h2>Harmonization without provenance is data laundering.</h2>
+      <p class="lede">A 7-day-click conversion and a data-driven conversion are not the same event. Summing them produces a confidently wrong number an agent then acts on.</p>
+      <ul class="talk">
+        <li><strong>Detect</strong> the disagreement — don’t average it away.</li>
+        <li><strong>Decide once</strong>, with a name and a timestamp on the decision.</li>
+        <li><strong>Carry the caveat</strong> on the result object, not as a footnote someone might skip.</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-min="6:00–8:30" data-notes="Walk each card: bet, then why, then the falsifier. These are load-bearing. If (1) is wrong, we built a connector company. If (2) is wrong, we are an agency. If (3) is wrong, the ontology explodes. If (4) is wrong, we should just ETL and sum — and that is the silent-wrong-answer failure mode.">
+      <div class="kicker">3 · Assumptions · product bets</div>
+      <h2>Four things that have to be true for this to be a product.</h2>
+      <div class="grid g2">
+        <div class="card">
+          <h3>1. Judgment is the bottleneck, not extraction.</h3>
+          <p class="why">Connectors exist. The weeks are fees, attribution windows, grain. Those answers currently die in Slack.</p>
+          <p class="ifwrong">If wrong: this is a pipeline company. Stop. Buy Fivetran.</p>
+        </div>
+        <div class="card">
+          <h3>2. The deliverable is a contract, not a pipeline.</h3>
+          <p class="why">A pipeline does not compound. A versioned YAML with <em>decided_by</em> / <em>decided_at</em> is reviewable, diffable, and reusable as a prior.</p>
+          <p class="ifwrong">If wrong: we are selling hours. Client two is not faster than client one.</p>
+        </div>
+        <div class="card">
+          <h3>3. ~15 canonical metrics cover ~90% of agent questions.</h3>
+          <p class="why">The hard work is not metric #16. It is recording <em>how</em> each source differs — disclosure axes on the canonical definition.</p>
+          <p class="ifwrong">If wrong: the ontology becomes the product, and we drown in vocabulary.</p>
+        </div>
+        <div class="card hl">
+          <h3>4. Some conflicts are irreducible.</h3>
+          <p class="why">Two platforms measuring different events. The correct behavior is BLOCK: refuse a harmonised number until a human picks.</p>
+          <p class="ifwrong">If wrong: just transform and sum. That is how you ship silent wrong answers.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-min="8:30–10:30" data-notes="Operating bets — how we refuse to cheat. Taxonomy is evidence not authority (the sample doc lies on purpose). Unknown is required; a mapping layer that never returns unknown is a mapping layer that lies. Model may notice; Python raises severity — attribution windows cannot AUTO. Client-2-faster is the platform test: resolutions become priors, client data never crosses tenants. Entity IDs are flagged, not solved.">
+      <div class="kicker">3 · Assumptions · operating bets</div>
+      <h2>How we refuse to cheat.</h2>
+      <div class="grid g2">
+        <div class="card">
+          <h3>5. The taxonomy doc is evidence, not authority.</h3>
+          <p class="why">Docs go stale. Ours asserts naming and spend rules the exports violate. Where doc and data disagree, report it — do not silently pick a side.</p>
+          <p class="ifwrong">If we treat the doc as truth, we automate the lie.</p>
+        </div>
+        <div class="card">
+          <h3>6. Unknown is a first-class output.</h3>
+          <p class="why">Never guess an attribution window or fee-inclusion rule. Guessing is how caveats disappear.</p>
+          <p class="ifwrong">A mapping layer that always fills the field is a mapping layer that lies.</p>
+        </div>
+        <div class="card">
+          <h3>7. The model notices. Python is the policy floor.</h3>
+          <p class="why">Schema scan scales with the ontology. The agent finds what rules cannot see. The agent may raise severity; it may not AUTO two attribution windows.</p>
+          <p class="ifwrong">If the model can quietly AUTO an irreducible definition, the rails are theater.</p>
+        </div>
+        <div class="card">
+          <h3>8. Client two must be faster than client one.</h3>
+          <p class="why">Resolutions become priors — field-name patterns and definitional defaults. Client data never crosses tenants. Entity resolution across ID spaces is out of scope.</p>
+          <p class="ifwrong">If it doesn’t compound, this is an agency service, not a platform.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-min="10:30–12:00" data-notes="Two architectures. Top: product layers. Bottom: Resolve internals. Then the policy floor — this is why it is an agent with rails, not a list of if-statements and not a black box. AUTO = deterministic transform, apply and log. REVIEW = reconcilable with loss (grain rollup). BLOCK = refuse to serve a harmonised number. Point at BLOCK as the interesting one.">
+      <div class="kicker">4 · Architecture</div>
+      <h2>An agent with rails, not if-statements and not a black box.</h2>
+      <div class="sev">
+        <div>
+          <div class="lab" style="color:var(--ok)">AUTO</div>
+          <h3>Deterministic transform</h3>
+          <p class="muted">Micros → currency. Apply, log, don’t stop the human.</p>
+        </div>
+        <div>
+          <div class="lab" style="color:var(--accent)">REVIEW</div>
+          <h3>Reconcilable with loss</h3>
+          <p class="muted">Daily vs weekly. Roll up, or keep split. Decide with a default.</p>
+        </div>
+        <div>
+          <div class="lab" style="color:var(--warn)">BLOCK</div>
+          <h3>Irreducible definition</h3>
+          <p class="muted">Attribution model/window. Mixed currency. Do not sum.</p>
+        </div>
+      </div>
+      <div class="grid g2" style="margin-top:0.4rem">
+        <div class="card">
+          <h3>Schema scan — no LLM</h3>
+          <p class="why">Collision groups × disclosure axes in <em>metrics.yaml</em>. Add an axis, get a new conflict class. No new if-statement. Grain, units, coverage come from the profiler.</p>
+        </div>
+        <div class="card">
+          <h3>Agent — tools, then Python</h3>
+          <p class="why">Finds what the schema cannot see: doc vs data, naming, entity-scope. Python raises to the floor. The model is allowed to notice. It is not allowed to AUTO a BLOCK.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-min="12:00–13:15" data-notes="Walk left to right, one breath each. Profile is boring on purpose — evidence gathering is deterministic. Propose is the live Claude call; taxonomy is evidence. Detect writes the first contract YAML. Adjudicate is the moment the demo lands: version bump, author, time. Query is hardcoded on purpose — we are testing caveat propagation, not a text-to-SQL agent. Grouping proposals by canonical_key is the UI trick that makes conflicts visible.">
+      <div class="kicker">5 · Data flow</div>
+      <h2>Five stages. One artifact.</h2>
+      <div class="flow">
+        <div class="step">
+          <div class="n">A · Profile</div>
+          <h3>CSVs in</h3>
+          <p>Types, nulls, grain, magnitude hints, has_decimals. No model.</p>
+          <span class="tag det">Deterministic</span>
+        </div>
+        <div class="step">
+          <div class="n">B · Propose</div>
+          <h3>Field → canonical</h3>
+          <p>Claude + metrics.yaml + taxonomy.md. Unknown allowed. Confidence on every row.</p>
+          <span class="tag live">Live LLM</span>
+        </div>
+        <div class="step">
+          <div class="n">C · Detect</div>
+          <h3>Collisions</h3>
+          <p>Schema scan, then tool-using agent. Seeds contracts/acme.yaml.</p>
+          <span class="tag live">Scan + agent</span>
+        </div>
+        <div class="step">
+          <div class="n">D · Decide</div>
+          <h3>Human writes</h3>
+          <p>Radio + required rationale. resolve → bump → save. Git-diffable.</p>
+          <span class="tag det">No LLM</span>
+        </div>
+        <div class="step">
+          <div class="n">E · Query</div>
+          <h3>Number + caveat</h3>
+          <p>May 2026 spend &amp; conversions. BLOCK metrics split by source.</p>
+          <span class="tag stub">Q hardcoded</span>
+        </div>
+        <div class="step" style="border-color:var(--accent);background:#241f14">
+          <div class="n">Artifact</div>
+          <h3>acme.yaml</h3>
+          <p>Mappings, open conflicts, resolutions, version. This is the product.</p>
+          <span class="tag det">Versioned</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-min="13:15–14:20" data-notes="Name every stub out loud. Do not get caught. Real: profiler, live propose, conflict agent, contract I/O, caveat on the result. Stubbed: connectors (CSVs on disk), warehouse (pandas in memory), auth/multi-tenancy (one client: acme), query agent (one hardcoded question), confidence calibration (raw model scores). Sample data is planted — 10 conflicts in generate_sample_data.py — only open that if they ask how the fixtures were made.">
+      <div class="kicker">6 · Real vs hardcoded</div>
+      <h2>Name every stub before they find it.</h2>
+      <div class="grid g2">
+        <div>
+          <table class="cmp">
+            <thead><tr><th>Real — what I’m testing</th></tr></thead>
+            <tbody>
+              <tr><td>Deterministic profiler (grain, micros hint, has_decimals)</td></tr>
+              <tr><td>Live Claude mapping proposal — uncanned, may return unknown</td></tr>
+              <tr><td>Conflict agent: schema scan + tools + Python policy floor</td></tr>
+              <tr><td>Contract YAML: mappings, resolutions, versioning</td></tr>
+              <tr><td>Caveat as a property of the result, not a footnote</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <table class="cmp">
+            <thead><tr><th>Stubbed — on purpose</th></tr></thead>
+            <tbody>
+              <tr><td>Connectors — two CSVs on disk. Extraction is a commodity.</td></tr>
+              <tr><td>Warehouse — in-memory frames, not Snowflake.</td></tr>
+              <tr><td>Auth / multi-tenancy — one client, <em>acme</em>.</td></tr>
+              <tr><td>Query agent — one hardcoded May 2026 question.</td></tr>
+              <tr><td>Confidence calibration — raw model output, no golden set yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-min="14:20–14:45" data-notes="Fast close. Risks in that order: silent wrong answers are worse than no number; treating the taxonomy as truth; work that doesn’t compound; humans becoming the bottleneck on obvious fields. Metrics: time-to-first-trusted-query, auto-map rate across clients, human review minutes per source, contradiction escape rate. Humans forever on the irreducible 6; zero humans on the 380 obvious fields. If they ask about the sample: planted conflicts live in generate_sample_data.py — do not volunteer the answer key.">
+      <div class="kicker">Also true</div>
+      <h2>What I would run the roadmap on.</h2>
+      <div class="grid g2">
+        <div class="card">
+          <h3>Risks, ranked</h3>
+          <p class="why">1. Silent wrong answers — an agent acts on a laundered total.<br>2. Doc-as-truth — we automate the stale taxonomy.<br>3. Doesn’t compound — client two isn’t faster.<br>4. Human becomes the bottleneck on obvious fields.</p>
+        </div>
+        <div class="card">
+          <h3>Slice metrics</h3>
+          <p class="why">Time-to-first-<em>trusted</em>-query.<br>Auto-map rate, trended across clients.<br>Human review minutes per source — not fields mapped.<br>Contradiction escape rate: BLOCK conflicts that still got summed.</p>
+        </div>
+      </div>
+      <p class="lede" style="margin-top:0.4rem;max-width:none;font-size:1.15rem;">The goal is not zero humans. It is zero humans on the 380 obvious fields, so attention is left for the 6 that matter.</p>
+    </section>
+
+    <section class="slide" data-min="14:45–15:00" data-notes="Transition line, then stop talking. Open tab 1 Profile. Point at grain daily vs weekly, cost_micros magnitude, has_decimals on Lumen conversions. Say the profiler is pre-built because it is cheap and boring. Then invite them to break it.">
+      <div class="kicker">Minute 15</div>
+      <h1>I’ve left room for you to break this.</h1>
+      <p class="lede">Streamlit is running. First: what the system sees before a model is involved — grain, micros, fractional conversions. Then we let the model propose, and we see what it is not allowed to decide.</p>
+    </section>
+
+  </div>
+  <div class="chrome">
+    <div class="bar" id="bar"></div>
+    <span id="pos">1 / 11</span>
+    <span id="stamp">0:00–0:30</span>
+    <span id="clock">15:00 · press T</span>
+  </div>
+  <script>
+    const slides = [...document.querySelectorAll(".slide")];
+    const notesEl = document.getElementById("notes");
+    const pos = document.getElementById("pos");
+    const stamp = document.getElementById("stamp");
+    const bar = document.getElementById("bar");
+    const clock = document.getElementById("clock");
+    let i = 0;
+    let notesOn = false;
+    let t0 = null;
+    let remaining = 15 * 60;
+
+    function show(n) {
+      i = Math.max(0, Math.min(slides.length - 1, n));
+      slides.forEach((s, k) => s.classList.toggle("on", k === i));
+      const s = slides[i];
+      pos.textContent = (i + 1) + " / " + slides.length;
+      stamp.textContent = s.dataset.min;
+      bar.style.width = ((i) / (slides.length - 1) * 100) + "%";
+      notesEl.innerHTML = "<strong>Say</strong><br>" + s.dataset.notes;
+    }
+    function fmt(sec) {
+      const m = Math.floor(Math.max(0, sec) / 60);
+      const s = Math.floor(Math.max(0, sec) % 60);
+      return String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0");
+    }
+    setInterval(() => {
+      if (t0 == null) return;
+      remaining = 15 * 60 - (Date.now() - t0) / 1000;
+      clock.textContent = fmt(remaining);
+      clock.classList.toggle("warn", remaining < 120);
+    }, 250);
+
+    document.addEventListener("keydown", (e) => {
+      if (["ArrowRight","PageDown"," ","Enter"].includes(e.key)) { e.preventDefault(); show(i+1); }
+      if (["ArrowLeft","PageUp","Backspace"].includes(e.key)) { e.preventDefault(); show(i-1); }
+      if (e.key === "Home") show(0);
+      if (e.key === "End") show(slides.length-1);
+      if (e.key === "n" || e.key === "N") {
+        notesOn = !notesOn;
+        notesEl.classList.toggle("on", notesOn);
+      }
+      if (e.key === "t" || e.key === "T") {
+        t0 = Date.now();
+        clock.textContent = "15:00";
+      }
+      if (e.key === "f" || e.key === "F") {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+    });
+    document.getElementById("deck").addEventListener("click", (e) => {
+      if (e.target.closest(".notes")) return;
+      show(i + (e.clientX > innerWidth / 2 ? 1 : -1));
+    });
+    show(0);
+  </script>
+</body>
+</html>
