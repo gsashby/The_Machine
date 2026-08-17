@@ -7,9 +7,7 @@ minutes) on it. Say this out loud during the session: the profiler is the
 evidence-gathering step, and it is deterministic on purpose so that the model's
 proposal is grounded in observed facts rather than in the field name alone.
 
-The output of this module is what gets fed to the LLM in propose.py. Keeping it
-compact matters — you are paying for these tokens on every field of every source
-of every client.
+
 """
 
 from __future__ import annotations
